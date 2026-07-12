@@ -25,12 +25,14 @@
   }
   #app{
     position:relative;
-    width:100%; height:100%;
+    width:100%; height:100vh; height:100dvh;
     display:flex; align-items:center; justify-content:center;
+    padding:8px;
   }
   #stage{
     position:relative;
-    width:min(96vw, 960px);
+    width:min(96vw, 960px, calc(94vh * 960 / 600));
+    width:min(96vw, 960px, calc(94dvh * 960 / 600));
     aspect-ratio: 960 / 600;
     border-radius:18px;
     overflow:hidden;
@@ -67,15 +69,15 @@
   /* Order ticket */
   #order-ticket{
     position:absolute;
-    top:48px; left:10px;
-    width:230px;
+    top:44px; left:8px;
+    width:min(230px, 44%);
     background:var(--cream-2);
     color:#2b1810;
     border-radius:4px 4px 10px 10px;
-    padding:10px 12px 12px;
+    padding:clamp(6px,1.8vw,10px) clamp(7px,2vw,12px) clamp(8px,2vw,12px);
     box-shadow:0 8px 18px rgba(0,0,0,0.4);
     z-index:5;
-    font-size:13px;
+    font-size:clamp(9px,2.6vw,13px);
     transform-origin: top left;
     background-image: repeating-linear-gradient(#fff8ee, #fff8ee 22px, #eaddc7 23px);
   }
@@ -87,7 +89,7 @@
   }
   .ticket-title{
     text-align:center;
-    font-size:11px;
+    font-size:0.85em;
     letter-spacing:2px;
     text-transform:uppercase;
     color:#8a5a2b;
@@ -97,7 +99,7 @@
   }
   #order-drink-name{
     text-align:center;
-    font-size:16px;
+    font-size:1.2em;
     font-weight:800;
     margin-bottom:6px;
     color:#3d2418;
@@ -109,7 +111,7 @@
     border-radius:6px;
     background:rgba(0,0,0,0.05);
   }
-  .req-row .emoji{ font-size:16px; width:20px; text-align:center; }
+  .req-row .emoji{ font-size:1.2em; width:1.4em; text-align:center; }
   .req-row .label{ flex:1; }
   .req-row .count{ font-weight:bold; font-variant-numeric:tabular-nums; }
   .req-row.done{
@@ -119,25 +121,30 @@
     opacity:0.75;
   }
 
-  /* Overlays */
+  /* Overlays: fixed to the full viewport (not just the small game stage) so the
+     welcome/game-over screens always have the whole phone height to lay out in,
+     even when the stage itself is short in mobile portrait. */
   .overlay{
-    position:absolute; inset:0;
+    position:fixed; inset:0;
     background:rgba(15,8,4,0.88);
     display:flex; flex-direction:column; align-items:center; justify-content:center;
-    text-align:center; gap:14px; padding:20px;
+    text-align:center; gap:clamp(6px,2vh,14px); padding:clamp(10px,3vh,20px) 16px;
     z-index:20;
+    overflow-y:auto;
+    -webkit-overflow-scrolling:touch;
   }
   .overlay.hidden{ display:none; }
   .overlay h1{
-    font-size:clamp(28px,5vw,42px);
+    font-size:clamp(20px,5vw,42px);
     margin:0;
     color:var(--accent);
     text-shadow:0 3px 0 rgba(0,0,0,0.5);
+    flex-shrink:0;
   }
-  .overlay p{ max-width:480px; line-height:1.5; color:#e6d3ba; font-size:15px; }
+  .overlay p{ max-width:480px; line-height:1.4; color:#e6d3ba; font-size:clamp(12px,2.6vh,15px); flex-shrink:0; }
   .overlay button{
-    padding:12px 32px;
-    font-size:18px;
+    padding:clamp(8px,2vh,12px) 32px;
+    font-size:clamp(14px,2.8vh,18px);
     font-weight:bold;
     border:none;
     border-radius:999px;
@@ -146,13 +153,16 @@
     cursor:pointer;
     box-shadow:0 6px 0 #a15f22, 0 8px 16px rgba(0,0,0,0.4);
     transition:transform 0.08s ease;
+    flex-shrink:0;
+    margin:4px 0 8px;
   }
   .overlay button:active{ transform:translateY(4px); box-shadow:0 2px 0 #a15f22; }
   .howto{
-    display:flex; gap:18px; flex-wrap:wrap; justify-content:center;
-    font-size:13px; color:#cbb894; max-width:520px;
+    display:flex; gap:clamp(6px,1.5vw,18px); flex-wrap:wrap; justify-content:center;
+    font-size:clamp(10px,2.2vh,13px); color:#cbb894; max-width:520px;
+    flex-shrink:0;
   }
-  .howto div{ background:rgba(255,255,255,0.06); padding:8px 12px; border-radius:8px; }
+  .howto div{ background:rgba(255,255,255,0.06); padding:6px 10px; border-radius:8px; }
 
   #order-complete-banner{
     position:absolute; top:40%; left:50%;
@@ -182,12 +192,13 @@
   #flash.good{ background:radial-gradient(ellipse at center, rgba(127,174,78,0.05), rgba(127,174,78,0.35)); opacity:1; }
 
   .logo-badge{
-    width:120px; height:120px;
+    width:clamp(56px,14vh,120px); height:clamp(56px,14vh,120px);
     border-radius:50%;
     box-shadow:0 10px 30px rgba(0,0,0,0.6), 0 0 0 3px rgba(224,164,92,0.5);
     background:#000;
+    flex-shrink:0;
   }
-  #gameover-overlay .logo-badge{ width:84px; height:84px; }
+  #gameover-overlay .logo-badge{ width:clamp(48px,10vh,84px); height:clamp(48px,10vh,84px); }
 
   #brand-watermark{
     position:absolute;

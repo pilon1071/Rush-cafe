@@ -1,0 +1,9 @@
+{
+  "permissions": {
+    "allow": [
+      "Skill(run)",
+      "Skill(run:*)",
+      "Bash(git -C \"/Users/pilon/Desktop/Documentos_Activos/Claude/Claude Code/cafe juego\" status)"
+    ]
+  }
+}

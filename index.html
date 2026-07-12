@@ -94,16 +94,26 @@
     background:
       linear-gradient(-45deg, transparent 8px, var(--cream-2) 8px) 0 0/16px 16px repeat-x;
   }
-  .ticket-title{
-    text-align:center;
-    font-size:0.8em;
-    letter-spacing:2px;
-    text-transform:uppercase;
-    color:#8a5a2b;
+  .ticket-title-row{
+    display:flex; justify-content:space-between; align-items:baseline;
     border-bottom:1px dashed #cbb894;
     padding-bottom:4px;
     margin-bottom:2px;
   }
+  .ticket-title{
+    font-size:0.8em;
+    letter-spacing:2px;
+    text-transform:uppercase;
+    color:#8a5a2b;
+  }
+  .order-timer{
+    font-size:0.85em;
+    font-weight:800;
+    font-variant-numeric:tabular-nums;
+    color:#7fae4e;
+    transition:color 0.2s ease;
+  }
+  .order-timer.slow{ color:#c0392b; }
   #order-drink-name{
     text-align:center;
     font-size:1.15em;
@@ -221,7 +231,10 @@
 <div id="app">
   <div id="game-wrap">
     <div id="order-ticket">
-      <div class="ticket-title">Orden actual</div>
+      <div class="ticket-title-row">
+        <span class="ticket-title">Orden actual</span>
+        <span id="order-timer" class="order-timer">0.0s</span>
+      </div>
       <div id="order-drink-name">—</div>
       <div id="order-items"></div>
     </div>
@@ -361,6 +374,10 @@
 
     const decoyPool = Object.keys(ITEM_CATALOG).filter(id => !(id in required));
 
+    // Baseline time a focused player needs to catch every required item;
+    // used to size the speed bonus (faster than this = extra points).
+    const idealTime = 1.6 + ids.length * 1.3;
+
     return {
       drinkKey, drinkName: def.name,
       milkId: usesMilk ? milkId : null,
@@ -368,6 +385,7 @@
       flavorId,
       required,
       decoyPool,
+      idealTime,
     };
   }
 
@@ -424,6 +442,7 @@
   let spawnTimer = 0;
   let uidCounter = 1;
   let banisherTimeout = null;
+  let orderStartTime = 0;
 
   const cup = {
     x: LOGICAL_W/2,
@@ -473,6 +492,14 @@
     document.getElementById('score').textContent = score;
     document.getElementById('level').textContent = level;
     document.getElementById('lives-hearts').textContent = '❤️'.repeat(Math.max(lives,0)) + '🖤'.repeat(Math.max(3-lives,0));
+  }
+
+  function updateOrderTimer(){
+    const el = document.getElementById('order-timer');
+    if (!el || !order) return;
+    const elapsed = (performance.now() - orderStartTime) / 1000;
+    el.textContent = elapsed.toFixed(1) + 's';
+    el.classList.toggle('slow', elapsed > order.idealTime);
   }
 
   function flashScreen(kind){
@@ -551,17 +578,20 @@
   }
 
   function completeOrder(){
-    const bonus = 80 + level*20;
+    const elapsed = (performance.now() - orderStartTime) / 1000;
+    const speedBonus = Math.max(0, Math.min(150, Math.round((order.idealTime - elapsed) * 14)));
+    const bonus = 80 + level*20 + speedBonus;
     score += bonus;
     ordersCompleted++;
     level = 1 + Math.floor(ordersCompleted/2);
-    showOrderBanner(`¡Orden servida! +${bonus}`);
+    showOrderBanner(speedBonus > 0 ? `¡Orden servida! +${bonus} (⚡+${speedBonus} rápido!)` : `¡Orden servida! +${bonus}`);
     updateHUD();
     items = items.filter(it => order.required[it.itemId] === undefined); // clear leftover needed-type items
     clearTimeout(banisherTimeout);
     banisherTimeout = setTimeout(()=>{
       if (!running) return;
       order = generateOrder();
+      orderStartTime = performance.now();
       updateTicketUI();
     }, 1100);
   }
@@ -591,6 +621,8 @@
     cup.targetX = Math.max(cup.width/2, Math.min(LOGICAL_W - cup.width/2, cup.targetX));
     cup.x += (cup.targetX - cup.x) * Math.min(1, dt*10);
     if (cup.flashTime > 0) cup.flashTime -= dt;
+
+    updateOrderTimer();
 
     // spawn
     spawnTimer -= dt*1000;
@@ -1296,6 +1328,7 @@
     spawnTimer = 400;
     cup.x = LOGICAL_W/2; cup.targetX = LOGICAL_W/2;
     order = generateOrder();
+    orderStartTime = performance.now();
     updateHUD();
     updateTicketUI();
     document.getElementById('start-overlay').classList.add('hidden');
@@ -1310,6 +1343,7 @@
 
   // initial static frame behind the start overlay
   order = generateOrder();
+  orderStartTime = performance.now();
   render();
   updateHUD();
   updateTicketUI();
